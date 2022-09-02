@@ -167,7 +167,7 @@ namespace ExchangeSharp
 		/// Get fees
 		/// </summary>
 		/// <returns>The customer trading fees</returns>
-		Task<Dictionary<string, decimal>> GetFeesAync();
+		Task<Dictionary<string, decimal>> GetFeesAsync();
 
 		/// <summary>
 		/// Get total amounts, symbol / amount dictionary
