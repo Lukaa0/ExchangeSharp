@@ -3,7 +3,6 @@ using ExchangeSharp.API.Exchanges.Blockchain;
 
 var api =
 	await ExchangeAPI.GetExchangeAPIAsync<ExchangeBlockchainAPI>() as ExchangeBlockchainAPI;
-api.LoadAPIKeysUnsecure("",
-	"secret");
-var n = await api.GetFillsAsync("BTC-USD");
+api.LoadAPIKeysUnsecure("", "");
+var balances = await api.GetBalancesAsync();
 Console.ReadLine();

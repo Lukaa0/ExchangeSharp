@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ExchangeSharp.Model;
 using Newtonsoft.Json.Linq;
 
 namespace ExchangeSharp.API.Exchanges.Blockchain
@@ -43,6 +44,32 @@ namespace ExchangeSharp.API.Exchanges.Blockchain
 			var response =
 				await MakeJsonRequestAsync<JObject>("/fees", BaseUrl, requestMethod: "GET");
 			return response.ToObject<Dictionary<string, decimal>>();
+		}
+
+		protected override async Task<AccountBalances> OnGetBalancesAsync()
+		{
+			var accountBalances = new AccountBalances();
+			accountBalances.Balances = new List<AccountBalance>();
+			var response =
+				await MakeJsonRequestAsync<JObject>("/accounts", BaseUrl,
+					requestMethod: "GET");
+			accountBalances.Balance = response.First["balance"].ConvertInvariant<decimal>();
+			accountBalances.AvailableBalance =
+				response.First["available"].ConvertInvariant<decimal>();
+			foreach (var token in response)
+			{
+				var exchangeBalance = new AccountBalance
+				{
+					AccountName = token.Key,
+					LocalAvailableBalance =
+						token.Value["available_local"].ConvertInvariant<decimal>(),
+					BalanceLocal =
+						token.Value["balance_local"].ConvertInvariant<decimal>(),
+					Rate = token.Value["rate"].ConvertInvariant<decimal>()
+				};
+				accountBalances.Balances.Add(exchangeBalance);
+			}
+			return accountBalances;
 		}
 
 		protected override async Task<IEnumerable<ExchangeOrderResult>> OnGetFillsAsync(

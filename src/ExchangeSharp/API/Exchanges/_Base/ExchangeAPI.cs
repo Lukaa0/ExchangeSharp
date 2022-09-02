@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ExchangeSharp.Model;
 
 namespace ExchangeSharp
 {
@@ -201,8 +202,11 @@ namespace ExchangeSharp
 		protected virtual Task<Dictionary<string, decimal>> OnGetFeesAsync() =>
 			throw new NotImplementedException();
 
+		protected virtual Task<AccountBalances> OnGetBalancesAsync() =>
+			throw new NotImplementedException();
+
 		protected virtual Task<IEnumerable<ExchangeOrderResult>> OnGetFillsAsync(
-			string marketSymbol = null, DateTime? fromDateTime = null,
+			string? marketSymbol = null, DateTime? fromDateTime = null,
 			DateTime? toDateTime = null, long? fromExecId = null, long? toExecId = null,
 			int limit = 100) =>
 			throw new NotImplementedException();
@@ -1006,6 +1010,14 @@ namespace ExchangeSharp
 				nameof(GetFeesAsync));
 
 		/// <summary>
+		///     Get balances
+		/// </summary>
+		/// <returns>Collection of balances</returns>
+		public virtual async Task<AccountBalances> GetBalancesAsync() =>
+			await Cache.CacheMethod(MethodCachePolicy, async () => await OnGetBalancesAsync(),
+				nameof(OnGetBalancesAsync));
+
+		/// <summary>
 		///     Get fills
 		/// </summary>
 		/// <returns>Individual fills</returns>
@@ -1015,7 +1027,7 @@ namespace ExchangeSharp
 			int limit = 100) =>
 			await Cache.CacheMethod(MethodCachePolicy,
 				async () => await OnGetFillsAsync(marketSymbol, fromDateTime, toDateTime,
-					fromExecId, toExecId, limit), nameof(GetFeesAsync));
+					fromExecId, toExecId, limit), nameof(GetFillsAsync));
 
 		/// <summary>
 		///     Get total amounts, symbol / amount dictionary

@@ -17,6 +17,7 @@ namespace ExchangeSharp
 {
 	public class ExchangeBalances
 	{
+		public string AccountName { get; set; }
 		/// <summary>
 		/// DateTime of the balances update
 		/// </summary>
