@@ -111,6 +111,38 @@ namespace ExchangeSharp.API.Exchanges.Blockchain
 			return orders;
 		}
 
+		protected override async Task<IEnumerable<ExchangeWhitelist>> OnGetWhiteListAsync()
+		{
+			var response =
+				await MakeJsonRequestAsync<JArray>("/whitelist", BaseUrl,
+					requestMethod: "GET");
+			return response.ToObject<List<ExchangeWhitelist>>();
+		}
+
+		protected override async Task<ExchangeWithdrawalResponse> OnWithdrawAsync(
+			decimal? amount, string currency, string beneficiary, bool sendMax = false)
+		{
+			var parameters = new Dictionary<string, object>
+			{
+				{ "amount", amount },
+				{ "currency", currency },
+				{ "beneficiary", beneficiary },
+				{ "sendMax", sendMax }
+			};
+			var response =
+				await MakeJsonRequestAsync<JToken>("/withdrawals", BaseUrl, parameters,
+					"POST");
+			return new ExchangeWithdrawalResponse
+			{
+				Id = response["withdrawalId"].ToStringInvariant(),
+				Amount = response["amount"].ConvertInvariant<decimal>(),
+				Fee = response["fee"].ConvertInvariant<decimal>(),
+				Symbol = response["currency"].ToStringInvariant(),
+				Beneficiary = response["beneficiary"].ToStringInvariant(),
+				Message = response["state"].ToStringInvariant()
+			};
+		}
+
 		protected override async Task OnCancelOrderAsync(string orderId,
 			string marketSymbol = null, bool isClientOrderId = false) =>
 			await MakeJsonRequestAsync<JToken>($"/orders/{orderId}", BaseUrl,

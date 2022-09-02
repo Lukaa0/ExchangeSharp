@@ -205,6 +205,9 @@ namespace ExchangeSharp
 		protected virtual Task<AccountBalances> OnGetBalancesAsync() =>
 			throw new NotImplementedException();
 
+		protected virtual Task<IEnumerable<ExchangeWhitelist>> OnGetWhiteListAsync() =>
+			throw new NotImplementedException();
+
 		protected virtual Task<IEnumerable<ExchangeOrderResult>> OnGetFillsAsync(
 			string? marketSymbol = null, DateTime? fromDateTime = null,
 			DateTime? toDateTime = null, long? fromExecId = null, long? toExecId = null,
@@ -240,8 +243,8 @@ namespace ExchangeSharp
 			bool isClientOrderId = false) =>
 			throw new NotImplementedException();
 
-		protected virtual Task<ExchangeWithdrawalResponse> OnWithdrawAsync(
-			ExchangeWithdrawalRequest withdrawalRequest) =>
+		protected virtual Task<ExchangeWithdrawalResponse> OnWithdrawAsync(decimal? amount,
+			string currency, string beneficiary, bool sendMax = false) =>
 			throw new NotImplementedException();
 
 		protected virtual Task<IEnumerable<ExchangeTransaction>>
@@ -1030,6 +1033,15 @@ namespace ExchangeSharp
 					fromExecId, toExecId, limit), nameof(GetFillsAsync));
 
 		/// <summary>
+		///     Get whitelisted withdrawal accounts
+		/// </summary>
+		/// <returns>Individual fills</returns>
+		public virtual async Task<IEnumerable<ExchangeWhitelist>>
+			GetWhitelistedAccountsAsync() =>
+			await Cache.CacheMethod(MethodCachePolicy,
+				async () => await OnGetWhiteListAsync(), nameof(OnGetWhiteListAsync));
+
+		/// <summary>
 		///     Get total amounts, symbol / amount dictionary
 		/// </summary>
 		/// <returns>Dictionary of symbols and amounts</returns>
@@ -1175,13 +1187,13 @@ namespace ExchangeSharp
 		///     Asynchronous withdraws request.
 		/// </summary>
 		/// <param name="withdrawalRequest">The withdrawal request.</param>
-		public virtual async Task<ExchangeWithdrawalResponse> WithdrawAsync(
-			ExchangeWithdrawalRequest withdrawalRequest)
+		public virtual async Task<ExchangeWithdrawalResponse> WithdrawAsync(decimal? amount,
+			string currency, string beneficiary, bool sendMax = false)
 		{
 			// *NOTE* do not wrap in CacheMethodCall
 			await new SynchronizationContextRemover();
-			withdrawalRequest.Currency = NormalizeMarketSymbol(withdrawalRequest.Currency);
-			return await OnWithdrawAsync(withdrawalRequest);
+			currency = NormalizeMarketSymbol(currency);
+			return await OnWithdrawAsync(amount, currency, beneficiary, sendMax);
 		}
 
 		/// <summary>
